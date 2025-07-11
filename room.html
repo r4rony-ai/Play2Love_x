@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Play2Love – Room</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="top-bar">
+    <span id="room-name"></span>
+    <span id="status">🔗 Connecting...</span>
+    <select id="colorPicker">
+      <option value="black">🖤</option>
+      <option value="red">❤️</option>
+      <option value="blue">💙</option>
+      <option value="green">💚</option>
+    </select>
+    <input type="range" id="brushSize" min="1" max="10" value="3">
+    <button onclick="startGame()">🎯 Game</button>
+  </div>
+
+  <div id="avatars"></div>
+  <canvas id="canvas"></canvas>
+
+  <div id="guessBox" style="display:none;">
+    <input id="guessInput" placeholder="Guess the word..." />
+    <button onclick="submitGuess()">Submit</button>
+    <div id="guessResult"></div>
+  </div>
+
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
