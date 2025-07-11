@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Play2Love – Welcome</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="intro-bg">
+  <div class="intro-screen">
+    <h1 class="logo">💖 Play2Love</h1>
+    <input id="usernameInput" placeholder="Your Name 💬" />
+    <input id="roomInput" placeholder="Room Code 🏠" />
+    <button onclick="joinRoom()">Enter Room</button>
+  </div>
+
+  <script>
+    function joinRoom() {
+      const username = document.getElementById("usernameInput").value;
+      const room = document.getElementById("roomInput").value;
+      if (username.trim() && room.trim()) {
+        localStorage.setItem("username", username);
+        window.location.href = `room.html?room=${room}`;
+      }
+    }
+  </script>
+</body>
+</html>
