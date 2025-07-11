@@ -1,0 +1,91 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #111;
+  color: white;
+  overflow: hidden;
+}
+
+.intro-bg {
+  background: linear-gradient(to top right, #ff6ec4, #7873f5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.intro-screen {
+  text-align: center;
+  background: rgba(0,0,0,0.5);
+  padding: 30px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 400px;
+}
+
+.logo {
+  font-size: 2.5em;
+  margin-bottom: 20px;
+}
+
+input, button, select {
+  width: 100%;
+  padding: 14px;
+  margin: 6px 0;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
+}
+
+button {
+  background: #ff6ec4;
+  color: white;
+  font-weight: bold;
+}
+
+#top-bar {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background: #222;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  padding: 8px;
+  z-index: 10;
+}
+
+#canvas {
+  background: #fff;
+  margin-top: 60px;
+  display: block;
+  touch-action: none;
+  width: 100vw;
+  height: calc(100vh - 60px);
+}
+
+#guessBox {
+  position: fixed;
+  bottom: 10px;
+  width: 100%;
+  text-align: center;
+  background: #111;
+  padding: 10px 0;
+}
+
+#avatars {
+  position: fixed;
+  top: 60px;
+  left: 8px;
+  z-index: 5;
+}
+
+.avatar {
+  font-size: 1em;
+  background: #333;
+  color: #fff;
+  margin: 4px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  display: inline-block;
+}
