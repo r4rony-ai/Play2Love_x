@@ -2,34 +2,39 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Play2Love – Room</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Play2Love Room</title>
+  <link rel="stylesheet" href="room.css" />
 </head>
 <body>
-  <div id="top-bar">
-    <span id="room-name"></span>
-    <span id="status">🔗 Connecting...</span>
-    <select id="colorPicker">
-      <option value="black">🖤</option>
-      <option value="red">❤️</option>
-      <option value="blue">💙</option>
-      <option value="green">💚</option>
-    </select>
-    <input type="range" id="brushSize" min="1" max="10" value="3">
-    <button onclick="startGame()">🎯 Game</button>
+  <div class="room-container">
+    <div class="room-header">
+      <span id="status">🔵 Waiting for partner...</span>
+      <button onclick="clearCanvas()">🧹 Clear</button>
+    </div>
+
+    <canvas id="drawingCanvas"></canvas>
+
+    <div class="toolbar">
+      <input type="color" id="colorPicker" value="#000000" />
+      <input type="range" id="brushSize" min="2" max="20" value="4" />
+      <button onclick="undo()">↩️ Undo</button>
+      <button onclick="redo()">↪️ Redo</button>
+    </div>
+
+    <div class="chat-container">
+      <div id="messages" class="messages"></div>
+      <form id="chatForm">
+        <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off" />
+        <button type="submit">Send</button>
+      </form>
+    </div>
+
+    <audio id="bgMusic" src="assets/music.mp3" loop></audio>
+    <button id="playMusicBtn" onclick="toggleMusic()">🎵 Play Music</button>
   </div>
 
-  <div id="avatars"></div>
-  <canvas id="canvas"></canvas>
-
-  <div id="guessBox" style="display:none;">
-    <input id="guessInput" placeholder="Guess the word..." />
-    <button onclick="submitGuess()">Submit</button>
-    <div id="guessResult"></div>
-  </div>
-
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script src="script.js"></script>
 </body>
-</html>
+  </html>
