@@ -2,26 +2,56 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Play2Love – Welcome</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Play2Love</title>
   <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&display=swap" rel="stylesheet">
 </head>
-<body class="intro-bg">
-  <div class="intro-screen">
-    <h1 class="logo">💖 Play2Love</h1>
-    <input id="usernameInput" placeholder="Your Name 💬" />
-    <input id="roomInput" placeholder="Room Code 🏠" />
-    <button onclick="joinRoom()">Enter Room</button>
+<body>
+  <div class="container">
+    <div class="card">
+      <img src="assets/logo.png" alt="Heart" class="logo" />
+      <h1>Play2Love</h1>
+      <p>Create or join a room to play with your partner</p>
+      
+      <input type="text" id="nameInput" placeholder="Enter your name" />
+      <input type="text" id="roomInput" placeholder="Room Code (optional)" />
+
+      <div class="avatar-select">
+        <img src="assets/avatar-boy.png" id="boy" class="avatar" onclick="selectAvatar('boy')" />
+        <img src="assets/avatar-girl.png" id="girl" class="avatar" onclick="selectAvatar('girl')" />
+      </div>
+
+      <div class="buttons">
+        <button onclick="createRoom()">Create Room</button>
+        <button onclick="joinRoom()">Join Room</button>
+      </div>
+
+      <p class="credit">Made by <a href="https://www.instagram.com/_r4rony_" target="_blank">r4rony</a></p>
+    </div>
   </div>
 
   <script>
+    let selectedAvatar = "";
+
+    function selectAvatar(type) {
+      selectedAvatar = type;
+      document.getElementById('boy').classList.remove('selected');
+      document.getElementById('girl').classList.remove('selected');
+      document.getElementById(type).classList.add('selected');
+    }
+
+    function createRoom() {
+      const name = document.getElementById("nameInput").value.trim();
+      if (!name || !selectedAvatar) return alert("Enter name and select avatar");
+      window.location.href = `room.html?room=${Math.random().toString(36).substr(2, 6)}&name=${name}&avatar=${selectedAvatar}`;
+    }
+
     function joinRoom() {
-      const username = document.getElementById("usernameInput").value;
-      const room = document.getElementById("roomInput").value;
-      if (username.trim() && room.trim()) {
-        localStorage.setItem("username", username);
-        window.location.href = `room.html?room=${room}`;
-      }
+      const name = document.getElementById("nameInput").value.trim();
+      const room = document.getElementById("roomInput").value.trim();
+      if (!name || !room || !selectedAvatar) return alert("Fill all fields and select avatar");
+      window.location.href = `room.html?room=${room}&name=${name}&avatar=${selectedAvatar}`;
     }
   </script>
 </body>
