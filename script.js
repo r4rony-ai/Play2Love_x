@@ -1,89 +1,160 @@
 const socket = io("https://play2love-serverx-1.onrender.com");
-const canvas = document.getElementById("canvas");
+
+const canvas = document.getElementById("drawingCanvas");
 const ctx = canvas.getContext("2d");
+canvas.width = canvas.offsetWidth;
+canvas.height = canvas.offsetHeight;
 
-let username = localStorage.getItem("username") || "Partner";
-let room = new URLSearchParams(window.location.search).get("room");
-let color = "black";
-let brush = 3;
+const colorPicker = document.getElementById("colorPicker");
+const brushSize = document.getElementById("brushSize");
+const messages = document.getElementById("messages");
+const chatForm = document.getElementById("chatForm");
+const chatInput = document.getElementById("chatInput");
+const bgMusic = document.getElementById("bgMusic");
+
 let drawing = false;
+let paths = [];
+let undone = [];
+let currentPath = [];
+let lastX = 0, lastY = 0;
 
-document.getElementById("room-name").textContent = "Room: " + room;
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight - 60;
+const params = new URLSearchParams(window.location.search);
+const room = params.get("room");
+const name = params.get("name");
+const avatar = params.get("avatar");
 
-document.getElementById("colorPicker").onchange = e => color = e.target.value;
-document.getElementById("brushSize").oninput = e => brush = e.target.value;
+// Join room
+socket.emit("join-room", { room, name, avatar });
 
-// Desktop
-canvas.addEventListener("mousedown", () => drawing = true);
-canvas.addEventListener("mouseup", () => drawing = false);
-canvas.addEventListener("mousemove", draw);
+// Show partner joined
+socket.on("partner-joined", (data) => {
+  document.getElementById("status").textContent = `💑 Partner: ${data.name}`;
+});
 
-// Mobile
-canvas.addEventListener("touchstart", () => drawing = true);
-canvas.addEventListener("touchend", () => drawing = false);
-canvas.addEventListener("touchmove", drawTouch);
+// Drawing handlers
+canvas.addEventListener("mousedown", (e) => {
+  drawing = true;
+  currentPath = [];
+  const { x, y } = getXY(e);
+  lastX = x;
+  lastY = y;
+});
 
-function draw(e) {
+canvas.addEventListener("mouseup", () => {
+  drawing = false;
+  if (currentPath.length > 0) {
+    paths.push(currentPath);
+    socket.emit("draw", { room, path: currentPath });
+    undone = [];
+  }
+});
+
+canvas.addEventListener("mousemove", (e) => {
   if (!drawing) return;
-  const x = e.clientX;
-  const y = e.clientY - 60;
-  drawCircle(x, y, color, brush);
-  socket.emit("draw", { room, x, y, color, brush });
-}
+  const { x, y } = getXY(e);
+  const color = colorPicker.value;
+  const size = brushSize.value;
 
-function drawTouch(e) {
-  if (!drawing) return;
-  const touch = e.touches[0];
-  const x = touch.clientX;
-  const y = touch.clientY - 60;
-  drawCircle(x, y, color, brush);
-  socket.emit("draw", { room, x, y, color, brush });
-}
+  ctx.strokeStyle = color;
+  ctx.lineWidth = size;
+  ctx.lineCap = "round";
 
-function drawCircle(x, y, color, brush) {
-  ctx.fillStyle = color;
   ctx.beginPath();
-  ctx.arc(x, y, brush, 0, Math.PI * 2);
-  ctx.fill();
-}
+  ctx.moveTo(lastX, lastY);
+  ctx.lineTo(x, y);
+  ctx.stroke();
 
-socket.on("draw", ({ x, y, color, brush }) => drawCircle(x, y, color, brush));
-
-socket.emit("join", { room, username });
-
-socket.on("joined", (users) => {
-  document.getElementById("status").textContent = "💑 Partner Joined!";
-  updateAvatars(users);
+  currentPath.push({ x, y, fromX: lastX, fromY: lastY, color, size });
+  lastX = x;
+  lastY = y;
 });
 
-socket.on("user-list", updateAvatars);
-
-function updateAvatars(users) {
-  const avatarBox = document.getElementById("avatars");
-  avatarBox.innerHTML = "";
-  users.forEach(name => {
-    const div = document.createElement("div");
-    div.className = "avatar";
-    div.textContent = `😊 ${name}`;
-    avatarBox.appendChild(div);
-  });
+function getXY(e) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: e.clientX - rect.left,
+    y: e.clientY - rect.top
+  };
 }
 
-// Mini game
-let secretWord = "apple";
-function startGame() {
-  document.getElementById("guessBox").style.display = "block";
-  socket.emit("start-game", { room, word: secretWord });
-}
-
-socket.on("start-game", () => {
-  document.getElementById("guessBox").style.display = "block";
+// Receive drawing from partner
+socket.on("draw", ({ path }) => {
+  for (const p of path) {
+    ctx.strokeStyle = p.color;
+    ctx.lineWidth = p.size;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(p.fromX, p.fromY);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+  }
 });
 
-function submitGuess() {
-  const guess = document.getElementById("guessInput").value.toLowerCase();
-  document.getElementById("guessResult").textContent =
-    guess === secretWord ? "✅ Correct!" : "❌ Try Again!";
+// Clear drawing
+function clearCanvas() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  paths = [];
+  undone = [];
+  socket.emit("clear", room);
 }
+
+socket.on("clear", () => {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+});
+
+// Undo/Redo
+function undo() {
+  if (paths.length > 0) {
+    undone.push(paths.pop());
+    redrawAll();
+  }
+}
+
+function redo() {
+  if (undone.length > 0) {
+    paths.push(undone.pop());
+    redrawAll();
+  }
+}
+
+function redrawAll() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (const path of paths) {
+    for (const p of path) {
+      ctx.strokeStyle = p.color;
+      ctx.lineWidth = p.size;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(p.fromX, p.fromY);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+    }
+  }
+}
+
+// Chat
+chatForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const msg = chatInput.value.trim();
+  if (!msg) return;
+  socket.emit("chat", { room, name, text: msg });
+  chatInput.value = "";
+});
+
+socket.on("chat", ({ name, text }) => {
+  const div = document.createElement("div");
+  div.innerHTML = `<b>${name}:</b> ${text}`;
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+});
+
+// Music control
+function toggleMusic() {
+  if (bgMusic.paused) {
+    bgMusic.play();
+    document.getElementById("playMusicBtn").textContent = "⏸ Pause Music";
+  } else {
+    bgMusic.pause();
+    document.getElementById("playMusicBtn").textContent = "🎵 Play Music";
+  }
+    }
