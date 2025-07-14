@@ -1,62 +1,55 @@
-const socket = io("https://play2love-serverx-1.onrender.com");
+const socket = io("https://play2love-serverx-1.onrender.com", {
+  transports: ["websocket"]
+});
 
-const canvas = document.getElementById("drawingCanvas");
+const urlParams = new URLSearchParams(window.location.search);
+const room = urlParams.get("room");
+const name = urlParams.get("name");
+const avatar = urlParams.get("avatar");
+
+// Elements
+const canvas = document.getElementById("drawCanvas");
 const ctx = canvas.getContext("2d");
-canvas.width = canvas.offsetWidth;
-canvas.height = canvas.offsetHeight;
-
-const colorPicker = document.getElementById("colorPicker");
-const brushSize = document.getElementById("brushSize");
-const messages = document.getElementById("messages");
-const chatForm = document.getElementById("chatForm");
+const chatBox = document.getElementById("chatBox");
 const chatInput = document.getElementById("chatInput");
-const bgMusic = document.getElementById("bgMusic");
+const sendBtn = document.getElementById("sendBtn");
+const clearBtn = document.getElementById("clearBtn");
+const undoBtn = document.getElementById("undoBtn");
+const redoBtn = document.getElementById("redoBtn");
+const brushSize = document.getElementById("brushSize");
+const colorPicker = document.getElementById("colorPicker");
+const partnerStatus = document.getElementById("partnerStatus");
+
+// Canvas setup
+canvas.width = canvas.offsetWidth;
+canvas.height = 300;
 
 let drawing = false;
 let paths = [];
-let undone = [];
+let undonePaths = [];
 let currentPath = [];
-let lastX = 0, lastY = 0;
 
-const params = new URLSearchParams(window.location.search);
-const room = params.get("room");
-const name = params.get("name");
-const avatar = params.get("avatar");
+function getMousePos(e) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: (e.clientX || e.touches[0].clientX) - rect.left,
+    y: (e.clientY || e.touches[0].clientY) - rect.top
+  };
+}
 
-// Join room
-socket.emit("join-room", { room, name, avatar });
-
-// Show partner joined
-socket.on("partner-joined", (data) => {
-  document.getElementById("status").textContent = `💑 Partner: ${data.name}`;
-});
-
-// Drawing handlers
-canvas.addEventListener("mousedown", (e) => {
+function startDraw(e) {
   drawing = true;
   currentPath = [];
-  const { x, y } = getXY(e);
+  const { x, y } = getMousePos(e);
   lastX = x;
   lastY = y;
-});
+}
 
-canvas.addEventListener("mouseup", () => {
-  drawing = false;
-  if (currentPath.length > 0) {
-    paths.push(currentPath);
-    socket.emit("draw", { room, path: currentPath });
-    undone = [];
-  }
-});
-
-canvas.addEventListener("mousemove", (e) => {
+function draw(e) {
   if (!drawing) return;
-  const { x, y } = getXY(e);
-  const color = colorPicker.value;
-  const size = brushSize.value;
-
-  ctx.strokeStyle = color;
-  ctx.lineWidth = size;
+  const { x, y } = getMousePos(e);
+  ctx.strokeStyle = colorPicker.value;
+  ctx.lineWidth = brushSize.value;
   ctx.lineCap = "round";
 
   ctx.beginPath();
@@ -64,25 +57,43 @@ canvas.addEventListener("mousemove", (e) => {
   ctx.lineTo(x, y);
   ctx.stroke();
 
-  currentPath.push({ x, y, fromX: lastX, fromY: lastY, color, size });
+  currentPath.push({
+    fromX: lastX,
+    fromY: lastY,
+    x,
+    y,
+    color: ctx.strokeStyle,
+    size: ctx.lineWidth,
+  });
+
   lastX = x;
   lastY = y;
-});
-
-function getXY(e) {
-  const rect = canvas.getBoundingClientRect();
-  return {
-    x: e.clientX - rect.left,
-    y: e.clientY - rect.top
-  };
 }
 
-// Receive drawing from partner
-socket.on("draw", ({ path }) => {
+function stopDraw() {
+  if (currentPath.length > 0) {
+    paths.push(currentPath);
+    socket.emit("drawing", { path: currentPath, room });
+    undonePaths = [];
+  }
+  drawing = false;
+}
+
+// Events
+canvas.addEventListener("mousedown", startDraw);
+canvas.addEventListener("mousemove", draw);
+canvas.addEventListener("mouseup", stopDraw);
+canvas.addEventListener("mouseout", stopDraw);
+
+canvas.addEventListener("touchstart", startDraw);
+canvas.addEventListener("touchmove", draw);
+canvas.addEventListener("touchend", stopDraw);
+
+// Sync partner drawing
+socket.on("drawing", ({ path }) => {
   for (const p of path) {
     ctx.strokeStyle = p.color;
     ctx.lineWidth = p.size;
-    ctx.lineCap = "round";
     ctx.beginPath();
     ctx.moveTo(p.fromX, p.fromY);
     ctx.lineTo(p.x, p.y);
@@ -90,40 +101,54 @@ socket.on("draw", ({ path }) => {
   }
 });
 
-// Clear drawing
-function clearCanvas() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  paths = [];
-  undone = [];
-  socket.emit("clear", room);
-}
+// Join room
+socket.emit("joinRoom", { room, username: name });
 
-socket.on("clear", () => {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+socket.on("partnerJoined", ({ username }) => {
+  partnerStatus.textContent = `💑 Partner: ${username}`;
 });
 
+// Chat
+sendBtn.onclick = () => {
+  const message = chatInput.value.trim();
+  if (!message) return;
+  socket.emit("chat", { message, room });
+  appendMessage(name, message);
+  chatInput.value = "";
+};
+
+socket.on("chat", ({ message, username }) => {
+  appendMessage(username, message);
+});
+
+function appendMessage(sender, msg) {
+  const p = document.createElement("p");
+  p.innerHTML = `<strong>${sender}:</strong> ${msg}`;
+  chatBox.appendChild(p);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
 // Undo/Redo
-function undo() {
+undoBtn.onclick = () => {
   if (paths.length > 0) {
-    undone.push(paths.pop());
-    redrawAll();
+    undonePaths.push(paths.pop());
+    redrawCanvas();
   }
-}
+};
 
-function redo() {
-  if (undone.length > 0) {
-    paths.push(undone.pop());
-    redrawAll();
+redoBtn.onclick = () => {
+  if (undonePaths.length > 0) {
+    paths.push(undonePaths.pop());
+    redrawCanvas();
   }
-}
+};
 
-function redrawAll() {
+function redrawCanvas() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   for (const path of paths) {
     for (const p of path) {
       ctx.strokeStyle = p.color;
       ctx.lineWidth = p.size;
-      ctx.lineCap = "round";
       ctx.beginPath();
       ctx.moveTo(p.fromX, p.fromY);
       ctx.lineTo(p.x, p.y);
@@ -132,29 +157,14 @@ function redrawAll() {
   }
 }
 
-// Chat
-chatForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const msg = chatInput.value.trim();
-  if (!msg) return;
-  socket.emit("chat", { room, name, text: msg });
-  chatInput.value = "";
-});
+// Clear
+clearBtn.onclick = () => {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  paths = [];
+  undonePaths = [];
+  socket.emit("clear", room);
+};
 
-socket.on("chat", ({ name, text }) => {
-  const div = document.createElement("div");
-  div.innerHTML = `<b>${name}:</b> ${text}`;
-  messages.appendChild(div);
-  messages.scrollTop = messages.scrollHeight;
+socket.on("clear", () => {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 });
-
-// Music control
-function toggleMusic() {
-  if (bgMusic.paused) {
-    bgMusic.play();
-    document.getElementById("playMusicBtn").textContent = "⏸ Pause Music";
-  } else {
-    bgMusic.pause();
-    document.getElementById("playMusicBtn").textContent = "🎵 Play Music";
-  }
-    }
