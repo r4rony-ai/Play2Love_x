@@ -1,35 +1,40 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Play2Love Room</title>
   <link rel="stylesheet" href="room.css" />
 </head>
 <body>
   <audio id="bgMusic" loop>
-    <source src="music.mp3" type="audio/mpeg" />
+    <source src="assets/music.mp3" type="audio/mpeg" />
   </audio>
+
   <div class="room-container">
     <div class="top-bar">
-      <img src="logo.png" class="logo" alt="Logo" />
-      <span id="partnerStatus">Waiting for your partner...</span>
-    </div><canvas id="drawCanvas"></canvas>
+      <img src="assets/logo.png" alt="logo" class="logo" />
+      <div id="partnerStatus">Waiting for your partner...</div>
+    </div>
 
-<div class="tools">
-  <input type="color" id="colorPicker" value="#ff70a6" />
-  <input type="range" id="brushSize" min="1" max="20" value="4" />
-  <button id="undoBtn">Undo</button>
-  <button id="redoBtn">Redo</button>
-  <button id="clearBtn">Clear</button>
-</div>
+    <canvas id="drawCanvas"></canvas>
 
-<div class="chat-box" id="chatBox"></div>
-<div class="chat-input">
-  <input type="text" id="chatInput" placeholder="Type a message..." />
-  <button id="sendBtn">Send</button>
-</div>
+    <div class="tools">
+      <input type="color" id="colorPicker" value="#ff70a6" />
+      <input type="range" id="brushSize" min="2" max="20" value="4" />
+      <button id="clearBtn">Clear</button>
+    </div>
 
-<p class="credit">Made by <a href="https://www.instagram.com/_r4rony_" target="_blank">r4rony</a></p>
+    <div class="chat-box" id="chatBox"></div>
+    <div class="chat-input">
+      <input type="text" id="chatInput" placeholder="Type a message..." />
+      <button id="sendBtn">Send</button>
+    </div>
 
-  </div>  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>  <script src="script.js"></script></body>
+    <p class="credit">Made by <a href="https://www.instagram.com/_r4rony_" target="_blank">r4rony</a></p>
+  </div>
+
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="room.js"></script>
+</body>
 </html>
