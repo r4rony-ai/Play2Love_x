@@ -1,170 +1,51 @@
-const socket = io("https://play2love-serverx-1.onrender.com", {
-  transports: ["websocket"]
-});
+let socket; let isRoomCreator = false; let avatar = ""; let drawingAllowed = false;
 
-const urlParams = new URLSearchParams(window.location.search);
-const room = urlParams.get("room");
-const name = urlParams.get("name");
-const avatar = urlParams.get("avatar");
+function selectAvatar(type) { avatar = type; document.querySelectorAll('.avatar').forEach(a => a.classList.remove('selected')); document.getElementById(${type}Avatar).classList.add('selected'); }
 
-// Elements
-const canvas = document.getElementById("drawCanvas");
-const ctx = canvas.getContext("2d");
-const chatBox = document.getElementById("chatBox");
-const chatInput = document.getElementById("chatInput");
-const sendBtn = document.getElementById("sendBtn");
-const clearBtn = document.getElementById("clearBtn");
-const undoBtn = document.getElementById("undoBtn");
-const redoBtn = document.getElementById("redoBtn");
-const brushSize = document.getElementById("brushSize");
-const colorPicker = document.getElementById("colorPicker");
-const partnerStatus = document.getElementById("partnerStatus");
+function toggleMusic() { const music = document.getElementById("bgMusic"); if (music.paused) music.play(); else music.pause(); }
 
-// Canvas setup
-canvas.width = canvas.offsetWidth;
-canvas.height = 300;
+function createRoom() { const username = document.getElementById("username").value.trim(); const roomCode = document.getElementById("roomCode").value.trim() || Math.random().toString(36).substring(2, 7); if (!username || !avatar) return alert("Enter name and select avatar");
 
-let drawing = false;
-let paths = [];
-let undonePaths = [];
-let currentPath = [];
+localStorage.setItem("room", roomCode); localStorage.setItem("username", username); localStorage.setItem("isRoomCreator", true);
 
-function getMousePos(e) {
-  const rect = canvas.getBoundingClientRect();
-  return {
-    x: (e.clientX || e.touches[0].clientX) - rect.left,
-    y: (e.clientY || e.touches[0].clientY) - rect.top
-  };
-}
+window.location.href = "room.html"; }
 
-function startDraw(e) {
-  drawing = true;
-  currentPath = [];
-  const { x, y } = getMousePos(e);
-  lastX = x;
-  lastY = y;
-}
+function joinRoom() { const username = document.getElementById("username").value.trim(); const roomCode = document.getElementById("roomCode").value.trim(); if (!username || !avatar || !roomCode) return alert("Enter name, room code, and select avatar");
 
-function draw(e) {
-  if (!drawing) return;
-  const { x, y } = getMousePos(e);
-  ctx.strokeStyle = colorPicker.value;
-  ctx.lineWidth = brushSize.value;
-  ctx.lineCap = "round";
+localStorage.setItem("room", roomCode); localStorage.setItem("username", username); localStorage.setItem("isRoomCreator", false);
 
-  ctx.beginPath();
-  ctx.moveTo(lastX, lastY);
-  ctx.lineTo(x, y);
-  ctx.stroke();
+window.location.href = "room.html"; }
 
-  currentPath.push({
-    fromX: lastX,
-    fromY: lastY,
-    x,
-    y,
-    color: ctx.strokeStyle,
-    size: ctx.lineWidth,
-  });
+window.addEventListener("DOMContentLoaded", () => { const canvas = document.getElementById("drawCanvas"); if (!canvas) return;
 
-  lastX = x;
-  lastY = y;
-}
+const ctx = canvas.getContext("2d"); let painting = false; let brushColor = "#ff70a6"; let brushSize = 4;
 
-function stopDraw() {
-  if (currentPath.length > 0) {
-    paths.push(currentPath);
-    socket.emit("drawing", { path: currentPath, room });
-    undonePaths = [];
-  }
-  drawing = false;
-}
+const socketURL = "https://play2love-serverx-1.onrender.com"; socket = io(socketURL, { transports: ["websocket"] });
 
-// Events
-canvas.addEventListener("mousedown", startDraw);
-canvas.addEventListener("mousemove", draw);
-canvas.addEventListener("mouseup", stopDraw);
-canvas.addEventListener("mouseout", stopDraw);
+const room = localStorage.getItem("room"); const username = localStorage.getItem("username"); isRoomCreator = localStorage.getItem("isRoomCreator") === "true";
 
-canvas.addEventListener("touchstart", startDraw);
-canvas.addEventListener("touchmove", draw);
-canvas.addEventListener("touchend", stopDraw);
+const bgMusic = document.getElementById("bgMusic"); if (bgMusic) bgMusic.play().catch(() => {});
 
-// Sync partner drawing
-socket.on("drawing", ({ path }) => {
-  for (const p of path) {
-    ctx.strokeStyle = p.color;
-    ctx.lineWidth = p.size;
-    ctx.beginPath();
-    ctx.moveTo(p.fromX, p.fromY);
-    ctx.lineTo(p.x, p.y);
-    ctx.stroke();
-  }
-});
+if (isRoomCreator) { socket.emit("createRoom", { room, username }); } else { socket.emit("joinRoom", { room, username }); }
 
-// Join room
-socket.emit("joinRoom", { room, username: name });
+socket.on("joinError", (msg) => { alert(msg); window.location.href = "index.html"; });
 
-socket.on("partnerJoined", ({ username }) => {
-  partnerStatus.textContent = `💑 Partner: ${username}`;
-});
+socket.on("partnerJoined", ({ username }) => { const status = document.getElementById("partnerStatus"); if (status) status.textContent = ${username} joined!; drawingAllowed = true; });
 
-// Chat
-sendBtn.onclick = () => {
-  const message = chatInput.value.trim();
-  if (!message) return;
-  socket.emit("chat", { message, room });
-  appendMessage(name, message);
-  chatInput.value = "";
-};
+// Drawing logic canvas.addEventListener("mousedown", (e) => { if (drawingAllowed) { painting = true; draw(e); } }); canvas.addEventListener("mouseup", () => painting = false); canvas.addEventListener("mouseleave", () => painting = false); canvas.addEventListener("mousemove", draw);
 
-socket.on("chat", ({ message, username }) => {
-  appendMessage(username, message);
-});
+function draw(e) { if (!painting || !drawingAllowed) return; const x = e.offsetX; const y = e.offsetY; ctx.lineWidth = brushSize; ctx.lineCap = "round"; ctx.strokeStyle = brushColor; ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y); socket.emit("drawing", { x, y, brushColor, brushSize }); }
 
-function appendMessage(sender, msg) {
-  const p = document.createElement("p");
-  p.innerHTML = `<strong>${sender}:</strong> ${msg}`;
-  chatBox.appendChild(p);
-  chatBox.scrollTop = chatBox.scrollHeight;
-}
+socket.on("drawing", (data) => { ctx.lineWidth = data.brushSize; ctx.strokeStyle = data.brushColor; ctx.lineTo(data.x, data.y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(data.x, data.y); });
 
-// Undo/Redo
-undoBtn.onclick = () => {
-  if (paths.length > 0) {
-    undonePaths.push(paths.pop());
-    redrawCanvas();
-  }
-};
+// Color and brush size document.getElementById("colorPicker").addEventListener("input", e => brushColor = e.target.value); document.getElementById("brushSize").addEventListener("input", e => brushSize = e.target.value);
 
-redoBtn.onclick = () => {
-  if (undonePaths.length > 0) {
-    paths.push(undonePaths.pop());
-    redrawCanvas();
-  }
-};
+// Chat document.getElementById("sendBtn").addEventListener("click", () => { const input = document.getElementById("chatInput"); const msg = input.value.trim(); if (msg) { addMessage(You: ${msg}); socket.emit("chat", { message: msg }); input.value = ""; } });
 
-function redrawCanvas() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  for (const path of paths) {
-    for (const p of path) {
-      ctx.strokeStyle = p.color;
-      ctx.lineWidth = p.size;
-      ctx.beginPath();
-      ctx.moveTo(p.fromX, p.fromY);
-      ctx.lineTo(p.x, p.y);
-      ctx.stroke();
-    }
-  }
-}
+socket.on("chat", ({ username, message }) => { addMessage(${username}: ${message}); });
 
-// Clear
-clearBtn.onclick = () => {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  paths = [];
-  undonePaths = [];
-  socket.emit("clear", room);
-};
+function addMessage(msg) { const box = document.getElementById("chatBox"); const p = document.createElement("p"); p.textContent = msg; box.appendChild(p); box.scrollTop = box.scrollHeight; }
 
-socket.on("clear", () => {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-});
+// Clear document.getElementById("clearBtn").addEventListener("click", () => { ctx.clearRect(0, 0, canvas.width, canvas.height); socket.emit("clear"); }); socket.on("clear", () => ctx.clearRect(0, 0, canvas.width, canvas.height)); });
+
+  
