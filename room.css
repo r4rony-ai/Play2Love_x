@@ -1,134 +1,36 @@
-body {
-  margin: 0;
-  font-family: 'Poppins', sans-serif;
-  background: url('assets/background.png') no-repeat center center fixed;
-  background-size: cover;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-}
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
-.container {
-  width: 100%;
-  max-width: 700px;
-  padding: 20px;
-}
+body { margin: 0; padding: 0; font-family: 'Poppins', sans-serif; background: url('background.png') no-repeat center center fixed; background-size: cover; overflow: hidden; color: white; }
 
-.glass-card {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(15px);
-  border-radius: 30px;
-  padding: 25px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
-  color: white;
-}
+.room-container { width: 100vw; height: 100vh; backdrop-filter: blur(15px); background: rgba(0, 0, 0, 0.4); display: flex; flex-direction: column; align-items: center; padding-top: 10px; box-sizing: border-box; }
 
-h2 {
-  margin: 0 0 10px;
-  font-size: 26px;
-  text-align: center;
-}
+.top-bar { display: flex; align-items: center; justify-content: space-between; width: 90%; max-width: 1000px; }
 
-#partnerStatus {
-  text-align: center;
-  margin-bottom: 15px;
-  font-size: 16px;
-  font-weight: 500;
-  opacity: 0.8;
-}
+.logo { width: 60px; }
 
-.canvas-wrapper {
-  position: relative;
-}
+#partnerStatus { font-weight: 500; font-size: 16px; }
 
-canvas {
-  width: 100%;
-  height: 300px;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
-  cursor: crosshair;
-  touch-action: none;
-}
+canvas { border-radius: 15px; background: white; width: 90%; max-width: 1000px; height: 400px; margin: 15px 0; touch-action: none; }
 
-#clearBtn {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  padding: 6px 10px;
-  font-size: 14px;
-  border: none;
-  border-radius: 10px;
-  background: #ff70a6;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-}
+.tools { display: flex; gap: 10px; margin-bottom: 10px; }
 
-.tools {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 15px 0;
-  flex-wrap: wrap;
-  gap: 10px;
-}
+.tools input[type="color"], .tools input[type="range"] { cursor: pointer; }
 
-.tools input[type="color"] {
-  width: 40px;
-  height: 40px;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-}
+button { background: linear-gradient(135deg, #ff70a6, #7a57ff); color: white; border: none; border-radius: 10px; padding: 6px 12px; font-weight: 600; cursor: pointer; transition: 0.3s; }
 
-.tools input[type="range"] {
-  width: 100px;
-}
+button:hover { opacity: 0.8; }
 
-.tools button {
-  padding: 8px 12px;
-  background: linear-gradient(135deg, #7a57ff, #ff70a6);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-weight: bold;
-  cursor: pointer;
-}
+.chat-box { background: rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 10px; width: 90%; max-width: 1000px; height: 120px; overflow-y: auto; margin-top: 10px; backdrop-filter: blur(10px); }
 
-.chat {
-  margin-top: 15px;
-}
+.chat-box p { margin: 5px 0; font-size: 14px; color: #fff; }
 
-#chatBox {
-  background: rgba(255, 255, 255, 0.15);
-  max-height: 120px;
-  overflow-y: auto;
-  border-radius: 10px;
-  padding: 10px;
-  margin-bottom: 10px;
-  font-size: 14px;
-}
+.chat-input { display: flex; width: 90%; max-width: 1000px; margin-top: 8px; }
 
-#chatInput {
-  width: 70%;
-  padding: 10px;
-  border-radius: 10px;
-  border: none;
-  outline: none;
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-}
+#chatInput { flex: 1; padding: 10px; border: none; border-radius: 10px 0 0 10px; outline: none; font-size: 14px; background: rgba(255, 255, 255, 0.2); color: white; }
 
-#sendBtn {
-  width: 25%;
-  padding: 10px;
-  margin-left: 5%;
-  background: #7a57ff;
-  border: none;
-  color: white;
-  font-weight: bold;
-  border-radius: 10px;
-  cursor: pointer;
-}
+#sendBtn { border-radius: 0 10px 10px 0; }
+
+.credit { margin-top: 10px; font-size: 12px; color: white; opacity: 0.7; }
+
+.credit a { color: #fff; text-decoration: none; }
+
