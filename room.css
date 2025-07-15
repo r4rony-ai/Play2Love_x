@@ -1,36 +1,36 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
-body { margin: 0; padding: 0; font-family: 'Poppins', sans-serif; background: url('background.png') no-repeat center center fixed; background-size: cover; overflow: hidden; color: white; }
+body { margin: 0; padding: 0; font-family: 'Poppins', sans-serif; background: url('assets/background.png') no-repeat center center fixed; background-size: cover; color: #fff; overflow: hidden; }
 
-.room-container { width: 100vw; height: 100vh; backdrop-filter: blur(15px); background: rgba(0, 0, 0, 0.4); display: flex; flex-direction: column; align-items: center; padding-top: 10px; box-sizing: border-box; }
+.room-container { backdrop-filter: blur(12px); background: rgba(0, 0, 0, 0.5); width: 100vw; height: 100vh; display: flex; flex-direction: column; align-items: center; padding-top: 10px; box-sizing: border-box; }
 
-.top-bar { display: flex; align-items: center; justify-content: space-between; width: 90%; max-width: 1000px; }
+.top-bar { display: flex; justify-content: space-between; align-items: center; width: 90%; max-width: 1000px; margin-bottom: 10px; }
 
 .logo { width: 60px; }
 
-#partnerStatus { font-weight: 500; font-size: 16px; }
+#partnerStatus { font-size: 16px; font-weight: 500; color: #ffdee9; }
 
-canvas { border-radius: 15px; background: white; width: 90%; max-width: 1000px; height: 400px; margin: 15px 0; touch-action: none; }
+canvas { background: white; border-radius: 16px; width: 90%; max-width: 1000px; height: 400px; touch-action: none; margin-bottom: 10px; }
 
 .tools { display: flex; gap: 10px; margin-bottom: 10px; }
 
-.tools input[type="color"], .tools input[type="range"] { cursor: pointer; }
+input[type="color"], input[type="range"] { cursor: pointer; }
 
-button { background: linear-gradient(135deg, #ff70a6, #7a57ff); color: white; border: none; border-radius: 10px; padding: 6px 12px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+button { background: linear-gradient(135deg, #ff70a6, #7a57ff); color: white; border: none; border-radius: 10px; padding: 6px 14px; font-weight: 600; cursor: pointer; transition: 0.3s; }
 
-button:hover { opacity: 0.8; }
+button:hover { opacity: 0.85; }
 
-.chat-box { background: rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 10px; width: 90%; max-width: 1000px; height: 120px; overflow-y: auto; margin-top: 10px; backdrop-filter: blur(10px); }
+.chat-box { background: rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 10px; width: 90%; max-width: 1000px; height: 120px; overflow-y: auto; margin-bottom: 10px; }
 
-.chat-box p { margin: 5px 0; font-size: 14px; color: #fff; }
+.chat-box p { margin: 6px 0; font-size: 14px; color: #fff; }
 
-.chat-input { display: flex; width: 90%; max-width: 1000px; margin-top: 8px; }
+.chat-input { display: flex; width: 90%; max-width: 1000px; margin-bottom: 10px; }
 
-#chatInput { flex: 1; padding: 10px; border: none; border-radius: 10px 0 0 10px; outline: none; font-size: 14px; background: rgba(255, 255, 255, 0.2); color: white; }
+#chatInput { flex: 1; padding: 10px; border: none; border-radius: 10px 0 0 10px; font-size: 14px; background: rgba(255, 255, 255, 0.2); color: white; }
 
 #sendBtn { border-radius: 0 10px 10px 0; }
 
-.credit { margin-top: 10px; font-size: 12px; color: white; opacity: 0.7; }
+.credit { margin-top: auto; font-size: 12px; color: #ccc; }
 
-.credit a { color: #fff; text-decoration: none; }
+.credit a { color: #ffd2f0; text-decoration: none; }
 
