@@ -1,35 +1,43 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Play2Love</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <audio id="bgMusic" loop>
-    <source src="music.mp3" type="audio/mpeg" />
-  </audio>
   <div class="container">
-    <img src="logo.png" class="logo" alt="Heart Logo" />
-    <h1>Play2Love</h1>
-    <p>Create or join a room to play with your partner</p><input type="text" id="username" placeholder="Enter your name" />
-<input type="text" id="roomCode" placeholder="Room Code (optional)" />
+    <img src="assets/logo.png" alt="Heart" class="logo" />
 
-<div class="button-row">
-  <button onclick="createRoom()">Create Room</button>
-  <button onclick="joinRoom()">Join Room</button>
-</div>
+    <h1 class="title">Play2Love</h1>
+    <p class="subtitle">Create or join a room to play with your partner</p>
 
-<div class="avatars">
-  <img src="avatar-boy.png" class="avatar" id="boyAvatar" onclick="selectAvatar('boy')" />
-  <img src="avatar-girl.png" class="avatar" id="girlAvatar" onclick="selectAvatar('girl')" />
-</div>
+    <input type="text" id="nameInput" placeholder="Enter your name" />
+    <input type="text" id="roomInput" placeholder="Room Code (optional)" />
 
-<div class="music-toggle" onclick="toggleMusic()">
-  <img src="music.png" alt="Music" />
-</div>
+    <div class="buttons">
+      <button id="createBtn">Create Room</button>
+      <button id="joinBtn">Join Room</button>
+    </div>
 
-<p class="credit">Made by <a href="https://www.instagram.com/_r4rony_" target="_blank">r4rony</a></p>
+    <div class="avatar-select">
+      <img src="assets/avatar-boy.png" id="avatar-boy" class="avatar" />
+      <img src="assets/avatar-girl.png" id="avatar-girl" class="avatar" />
+    </div>
 
-  </div>  <script src="script.js"></script></body>
+    <button id="musicToggle">
+      <img src="assets/music.png" alt="Music" />
+    </button>
+
+    <p class="footer">Made by <a href="https://www.instagram.com/_r4rony_" target="_blank">r4rony</a></p>
+  </div>
+
+  <audio id="bgMusic" loop>
+    <source src="assets/music.mp3" type="audio/mpeg" />
+  </audio>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="script.js"></script>
+</body>
 </html>
