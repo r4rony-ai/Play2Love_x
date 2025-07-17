@@ -1,73 +1,34 @@
-const socket = io('https://play2love-serverx-1.onrender.com'); // 🔗 Your deployed server URL
+function createRoom() {
+  const name = document.getElementById("username").value.trim();
+  const room = document.getElementById("roomCode").value.trim() || Math.floor(Math.random() * 10000);
+  if (name) {
+    window.location.href = `room.html?name=${name}&room=${room}`;
+  } else {
+    alert("Please enter your name");
+  }
+}
 
-// Elements
-const nameInput = document.getElementById('name');
-const roomInput = document.getElementById('room');
-const createBtn = document.getElementById('createRoom');
-const joinBtn = document.getElementById('joinRoom');
-const avatars = document.querySelectorAll('.avatar');
-const musicToggle = document.getElementById('musicToggle');
-const music = new Audio('assets/music.mp3');
+function joinRoom() {
+  const name = document.getElementById("username").value.trim();
+  const room = document.getElementById("roomCode").value.trim();
+  if (name && room) {
+    window.location.href = `room.html?name=${name}&room=${room}`;
+  } else {
+    alert("Please enter name and room code");
+  }
+}
 
-let selectedAvatar = '';
+function selectAvatar(gender) {
+  document.querySelectorAll(".avatar").forEach(el => el.classList.remove("selected"));
+  document.getElementById(gender).classList.add("selected");
+  localStorage.setItem("avatar", `assets/avatar-${gender}.png`);
+}
 
-// Avatar selection
-avatars.forEach((avatar) => {
-  avatar.addEventListener('click', () => {
-    avatars.forEach(a => a.classList.remove('selected'));
-    avatar.classList.add('selected');
-    selectedAvatar = avatar.getAttribute('data-avatar');
-  });
-});
-
-// Music toggle
-let isPlaying = false;
-musicToggle.addEventListener('click', () => {
-  isPlaying = !isPlaying;
-  if (isPlaying) {
+function toggleMusic() {
+  const music = document.getElementById("bg-music");
+  if (music.paused) {
     music.play();
   } else {
     music.pause();
   }
-});
-
-// Create room
-createBtn.addEventListener('click', () => {
-  const name = nameInput.value.trim();
-  const room = roomInput.value.trim() || generateRoomCode();
-
-  if (!name || !selectedAvatar) {
-    alert('Please enter your name and select an avatar.');
-    return;
-  }
-
-  localStorage.setItem('username', name);
-  localStorage.setItem('room', room);
-  localStorage.setItem('avatar', selectedAvatar);
-  localStorage.setItem('isCreator', 'true');
-
-  window.location.href = 'room.html';
-});
-
-// Join room
-joinBtn.addEventListener('click', () => {
-  const name = nameInput.value.trim();
-  const room = roomInput.value.trim();
-
-  if (!name || !room || !selectedAvatar) {
-    alert('Please enter your name, room code and select an avatar.');
-    return;
-  }
-
-  localStorage.setItem('username', name);
-  localStorage.setItem('room', room);
-  localStorage.setItem('avatar', selectedAvatar);
-  localStorage.setItem('isCreator', 'false');
-
-  window.location.href = 'room.html';
-});
-
-// Random room code generator
-function generateRoomCode() {
-  return Math.floor(1000 + Math.random() * 9000).toString(); // 4-digit room
 }
