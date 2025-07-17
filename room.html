@@ -4,37 +4,41 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Play2Love Room</title>
-  <link rel="stylesheet" href="room.css" />
+  <link rel="stylesheet" href="room.css"/>
 </head>
 <body>
-  <audio id="bgMusic" loop>
-    <source src="assets/music.mp3" type="audio/mpeg" />
-  </audio>
+  <div class="container">
+    <div class="header">
+      <img src="assets/logo.png" alt="Logo" class="logo" />
+      <h2 id="roomCodeDisplay"></h2>
+      <div class="partners">
+        <span id="user1">Waiting...</span> ❤️ <span id="user2">Waiting...</span>
+      </div>
+    </div>
 
-  <div class="room-container">
-    <div class="top-bar">
-      <img src="assets/logo.png" alt="logo" class="logo" />
-      <div id="partnerStatus">Waiting for your partner...</div>
+    <div class="tools">
+      <input type="color" id="colorPicker" />
+      <input type="range" id="brushSize" min="2" max="20" value="4" />
+      <button id="clearBtn">🧹</button>
+      <button id="undoBtn">↩️</button>
+      <button id="redoBtn">↪️</button>
     </div>
 
     <canvas id="drawCanvas"></canvas>
 
-    <div class="tools">
-      <input type="color" id="colorPicker" value="#ff70a6" />
-      <input type="range" id="brushSize" min="2" max="20" value="4" />
-      <button id="clearBtn">Clear</button>
-    </div>
-
-    <div class="chat-box" id="chatBox"></div>
-    <div class="chat-input">
+    <div class="chat-container">
+      <div id="chatBox"></div>
       <input type="text" id="chatInput" placeholder="Type a message..." />
-      <button id="sendBtn">Send</button>
     </div>
 
-    <p class="credit">Made by <a href="https://www.instagram.com/_r4rony_" target="_blank">r4rony</a></p>
+    <div class="footer">
+      <audio id="musicPlayer" src="assets/music.mp3" autoplay loop></audio>
+      <button id="musicToggle">🎵 Pause</button>
+      <p>Made by <a href="https://www.instagram.com/_r4rony_" target="_blank">r4rony</a></p>
+    </div>
   </div>
 
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
   <script src="room.js"></script>
 </body>
 </html>
