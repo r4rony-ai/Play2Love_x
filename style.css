@@ -1,80 +1,114 @@
-body {
-  background: url("assets/background.png") no-repeat center center fixed;
-  background-size: cover;
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@300;400;600&display=swap');
+
+* {
   margin: 0;
-  font-family: "Poppins", sans-serif;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
 }
-.container {
-  max-width: 400px;
-  margin: auto;
-  margin-top: 60px;
-  padding: 30px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  text-align: center;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(12px);
-  color: white;
-}
-.logo {
-  width: 80px;
-  height: auto;
-  margin-bottom: 10px;
-}
-input {
-  width: 90%;
-  padding: 10px;
-  margin: 10px auto;
-  border: none;
-  border-radius: 10px;
-  font-size: 16px;
-  background: rgba(255, 255, 255, 0.3);
-  color: #fff;
-}
-.btn-group button {
-  width: 40%;
-  padding: 12px;
-  margin: 10px 5px;
-  border: none;
-  border-radius: 10px;
-  background: linear-gradient(to right, #ff5e9c, #8b78ff);
-  color: white;
-  font-weight: bold;
-}
-.avatar-selection {
-  margin: 20px 0;
-}
-.avatar {
-  width: 60px;
-  border-radius: 50%;
-  margin: 0 10px;
-  cursor: pointer;
-  border: 3px solid transparent;
-  transition: border 0.3s ease;
-}
-.avatar.selected {
-  border: 3px solid #fff;
-}
-#musicBtn {
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  padding: 10px 20px;
-  margin-top: 20px;
-  color: white;
-  font-weight: bold;
-  border-radius: 12px;
+
+body {
+  background: url('assets/background.png') no-repeat center center fixed;
+  background-size: cover;
+  height: 100vh;
+  overflow: hidden;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  position: relative;
 }
-.credit {
-  margin-top: 20px;
+
+.container {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
+  border-radius: 20px;
+  padding: 30px;
+  width: 300px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.container h1 {
+  color: white;
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 10px;
+  outline: none;
   font-size: 14px;
-  color: #eee;
 }
+
+button {
+  padding: 10px 20px;
+  margin: 10px 5px;
+  border: none;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #ff4ec7, #6e52ff);
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  opacity: 0.9;
+  transform: scale(1.05);
+}
+
+.avatars {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.avatar {
+  width: 50px;
+  height: 50px;
+  margin: 0 10px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.avatar.selected {
+  border-color: #fff;
+  transform: scale(1.1);
+}
+
+.music-icon {
+  position: absolute;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90px;
+  height: auto;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  z-index: 10;
+}
+
+.music-icon:hover {
+  transform: translateX(-50%) scale(1.1);
+}
+
+.credit {
+  position: absolute;
+  bottom: 15px;
+  left: 20px;
+  font-size: 12px;
+  color: white;
+}
+
 .credit a {
   color: #fff;
-  text-decoration: none;
-  font-weight: bold;
+  text-decoration: underline;
 }
