@@ -1,134 +1,80 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
-}
-
 body {
-  background: url('assets/background.png') no-repeat center center fixed;
+  background: url("assets/background.png") no-repeat center center fixed;
   background-size: cover;
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+}
+.container {
+  max-width: 400px;
+  margin: auto;
+  margin-top: 60px;
+  padding: 30px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(12px);
+  color: white;
+}
+.logo {
+  width: 80px;
+  height: auto;
+  margin-bottom: 10px;
+}
+input {
+  width: 90%;
+  padding: 10px;
+  margin: 10px auto;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  background: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+.btn-group button {
+  width: 40%;
+  padding: 12px;
+  margin: 10px 5px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(to right, #ff5e9c, #8b78ff);
+  color: white;
+  font-weight: bold;
+}
+.avatar-selection {
+  margin: 20px 0;
+}
+.avatar {
+  width: 60px;
+  border-radius: 50%;
+  margin: 0 10px;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: border 0.3s ease;
+}
+.avatar.selected {
+  border: 3px solid #fff;
+}
+#musicBtn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  padding: 10px 20px;
+  margin-top: 20px;
+  color: white;
+  font-weight: bold;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  gap: 10px;
 }
-
-.container {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(20px);
-  border-radius: 25px;
-  padding: 30px 40px;
-  text-align: center;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  max-width: 400px;
-  width: 90%;
-  color: #fff;
-  position: relative;
-}
-
-.logo {
-  width: 60px;
-  margin-bottom: 10px;
-}
-
-.title {
-  font-size: 28px;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
-.subtitle {
+.credit {
+  margin-top: 20px;
   font-size: 14px;
-  opacity: 0.8;
-  margin-bottom: 20px;
-}
-
-input {
-  width: 100%;
-  padding: 10px 15px;
-  margin: 8px 0;
-  border: none;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.15);
-  color: white;
-  font-size: 14px;
-  outline: none;
-}
-
-input::placeholder {
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.buttons {
-  display: flex;
-  justify-content: space-between;
-  margin: 20px 0;
-}
-
-button {
-  width: 48%;
-  padding: 10px;
-  border: none;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 14px;
-  background: linear-gradient(to right, #ff5f8d, #8465f7);
-  color: white;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-button:hover {
-  opacity: 0.85;
-}
-
-.avatar-select {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin: 10px 0 20px;
-}
-
-.avatar {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  padding: 5px;
-  background: transparent;
-  border: 2px solid transparent;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.avatar.selected {
-  border: 2px solid #fff;
-  background: rgba(255, 255, 255, 0.2);
-}
-
-#musicToggle {
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  padding: 10px;
-  border-radius: 12px;
-  cursor: pointer;
-  margin-bottom: 15px;
-}
-
-#musicToggle img {
-  width: 20px;
-  height: 20px;
-}
-
-.footer {
-  font-size: 12px;
   color: #eee;
-  margin-top: 10px;
 }
-
-.footer a {
-  color: #ffd2f0;
+.credit a {
+  color: #fff;
   text-decoration: none;
+  font-weight: bold;
 }
