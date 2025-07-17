@@ -1,44 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
+<!-- room.html --><!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Play2Love Room</title>
-  <link rel="stylesheet" href="room.css"/>
+  <link rel="stylesheet" href="room.css" />
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <img src="assets/logo.png" alt="Logo" class="logo" />
-      <h2 id="roomCodeDisplay"></h2>
-      <div class="partners">
-        <span id="user1">Waiting...</span> ❤️ <span id="user2">Waiting...</span>
-      </div>
-    </div>
+  <div class="room-container">
+    <img src="assets/heart.png" alt="Heart" class="heart-icon" />
+    <h2 id="status">Waiting... ❤️ Waiting...</h2><div class="tools">
+  <input type="color" id="colorPicker" value="#ff0000" />
+  <input type="range" id="brushSize" min="1" max="30" value="5" />
+  <button id="eraser"><img src="assets/eraser.png" alt="Eraser" /></button>
+  <button id="undo"><img src="assets/undo.png" alt="Undo" /></button>
+  <button id="redo"><img src="assets/redo.png" alt="Redo" /></button>
+</div>
 
-    <div class="tools">
-      <input type="color" id="colorPicker" />
-      <input type="range" id="brushSize" min="2" max="20" value="4" />
-      <button id="clearBtn">🧹</button>
-      <button id="undoBtn">↩️</button>
-      <button id="redoBtn">↪️</button>
-    </div>
+<canvas id="drawingBoard"></canvas>
 
-    <canvas id="drawCanvas"></canvas>
+<div class="chat-box">
+  <div id="messages"></div>
+  <input type="text" id="messageInput" placeholder="Type a message..." />
+  <button id="sendMessage">Send</button>
+</div>
 
-    <div class="chat-container">
-      <div id="chatBox"></div>
-      <input type="text" id="chatInput" placeholder="Type a message..." />
-    </div>
+<button id="musicToggle">🎵 Pause</button>
+<p class="credit">Made by <a href="https://www.instagram.com/_r4rony_?igsh=MXJucGMxZzBxd2J0bg==" target="_blank">r4rony</a></p>
 
-    <div class="footer">
-      <audio id="musicPlayer" src="assets/music.mp3" autoplay loop></audio>
-      <button id="musicToggle">🎵 Pause</button>
-      <p>Made by <a href="https://www.instagram.com/_r4rony_" target="_blank">r4rony</a></p>
-    </div>
-  </div>
+  </div><audio id="bgMusic" src="assets/music.mp3" loop autoplay></audio>
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="room.js"></script>
-</body>
+  <script src="/socket.io/socket.io.js"></script>  <script src="room.js"></script></body>
 </html>
