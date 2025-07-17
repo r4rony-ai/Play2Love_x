@@ -1,171 +1,155 @@
 const socket = io("https://play2love-serverx-1.onrender.com");
 
-const canvas = document.getElementById("drawCanvas");
+// Elements
+const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth * 0.9;
-canvas.height = window.innerHeight * 0.45;
+const colorPicker = document.getElementById("colorPicker");
+const sizeSlider = document.getElementById("sizeSlider");
+const eraserBtn = document.getElementById("eraserBtn");
+const brushBtn = document.getElementById("brushBtn");
+const clearBtn = document.getElementById("clearBtn");
+const undoBtn = document.getElementById("undoBtn");
+const redoBtn = document.getElementById("redoBtn");
+const musicControl = document.getElementById("musicControl");
+const messages = document.getElementById("messages");
+const msgInput = document.getElementById("msgInput");
+const sendBtn = document.getElementById("sendBtn");
+const partnerStatus = document.getElementById("partnerStatus");
 
-const roomCode = new URLSearchParams(window.location.search).get("room");
-document.getElementById("roomCodeDisplay").innerText = `Room: ${roomCode}`;
+let painting = false;
+let isEraser = false;
+let roomCode = localStorage.getItem("roomCode");
+let username = localStorage.getItem("username");
+let partnerJoined = false;
 
-let drawing = false;
-let paths = [];
-let undoStack = [];
+let drawingHistory = [];
+let undoneHistory = [];
 
-const user1 = document.getElementById("user1");
-const user2 = document.getElementById("user2");
+const music = new Audio("assets/music.mp3");
+music.loop = true;
 
-let color = document.getElementById("colorPicker").value;
-let brushSize = document.getElementById("brushSize").value;
+function resizeCanvas() {
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
 
-document.getElementById("colorPicker").addEventListener("change", e => color = e.target.value);
-document.getElementById("brushSize").addEventListener("input", e => brushSize = e.target.value);
-
-canvas.addEventListener("mousedown", startDraw);
-canvas.addEventListener("mousemove", draw);
-canvas.addEventListener("mouseup", () => (drawing = false));
-canvas.addEventListener("mouseout", () => (drawing = false));
-
-canvas.addEventListener("touchstart", e => {
-  const touch = e.touches[0];
-  const mouseEvent = new MouseEvent("mousedown", {
-    clientX: touch.clientX,
-    clientY: touch.clientY
-  });
-  canvas.dispatchEvent(mouseEvent);
-});
-
-canvas.addEventListener("touchmove", e => {
-  const touch = e.touches[0];
-  const mouseEvent = new MouseEvent("mousemove", {
-    clientX: touch.clientX,
-    clientY: touch.clientY
-  });
-  canvas.dispatchEvent(mouseEvent);
-});
-
-canvas.addEventListener("touchend", () => {
-  const mouseEvent = new MouseEvent("mouseup", {});
-  canvas.dispatchEvent(mouseEvent);
-});
-
+// Drawing functions
 function startDraw(e) {
-  drawing = true;
+  if (!partnerJoined) return;
+  painting = true;
   draw(e);
 }
-
+function endDraw() {
+  painting = false;
+  ctx.beginPath();
+  drawingHistory.push(canvas.toDataURL());
+  undoneHistory = [];
+}
 function draw(e) {
-  if (!drawing) return;
-  const x = e.clientX - canvas.getBoundingClientRect().left;
-  const y = e.clientY - canvas.getBoundingClientRect().top;
+  if (!painting || !partnerJoined) return;
+  const rect = canvas.getBoundingClientRect();
+  const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+  const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
 
-  ctx.lineWidth = brushSize;
-  ctx.strokeStyle = color;
+  ctx.lineWidth = sizeSlider.value;
   ctx.lineCap = "round";
+  ctx.strokeStyle = isEraser ? "#ffffff" : colorPicker.value;
 
+  ctx.lineTo(x, y);
+  ctx.stroke();
   ctx.beginPath();
   ctx.moveTo(x, y);
-  ctx.lineTo(x + 0.1, y + 0.1); // tiny offset to prevent dotting
-  ctx.stroke();
 
-  const path = { x, y, color, brushSize };
-  paths.push(path);
-  socket.emit("drawing", { room: roomCode, ...path });
+  socket.emit("draw", { x, y, color: ctx.strokeStyle, size: ctx.lineWidth, isEraser });
 }
+canvas.addEventListener("mousedown", startDraw);
+canvas.addEventListener("mouseup", endDraw);
+canvas.addEventListener("mousemove", draw);
+canvas.addEventListener("touchstart", startDraw);
+canvas.addEventListener("touchend", endDraw);
+canvas.addEventListener("touchmove", draw);
 
-socket.on("draw", ({ x, y, color, brushSize }) => {
-  ctx.lineWidth = brushSize;
-  ctx.strokeStyle = color;
+// Sync drawing
+socket.on("draw", ({ x, y, color, size, isEraser }) => {
+  ctx.lineWidth = size;
+  ctx.lineCap = "round";
+  ctx.strokeStyle = isEraser ? "#ffffff" : color;
+  ctx.lineTo(x, y);
+  ctx.stroke();
   ctx.beginPath();
   ctx.moveTo(x, y);
-  ctx.lineTo(x + 0.1, y + 0.1);
-  ctx.stroke();
 });
 
-document.getElementById("clearBtn").addEventListener("click", () => {
+// Clear, Undo, Redo
+clearBtn.onclick = () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  socket.emit("clear", roomCode);
-});
-
-socket.on("clear", () => {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-});
-
-document.getElementById("undoBtn").addEventListener("click", () => {
-  if (paths.length > 0) {
-    undoStack.push(paths.pop());
-    redraw();
+  drawingHistory.push(canvas.toDataURL());
+  undoneHistory = [];
+  socket.emit("clear");
+};
+undoBtn.onclick = () => {
+  if (drawingHistory.length > 0) {
+    undoneHistory.push(drawingHistory.pop());
+    let img = new Image();
+    img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    img.src = drawingHistory[drawingHistory.length - 1] || "";
   }
-});
-
-document.getElementById("redoBtn").addEventListener("click", () => {
-  if (undoStack.length > 0) {
-    paths.push(undoStack.pop());
-    redraw();
+};
+redoBtn.onclick = () => {
+  if (undoneHistory.length > 0) {
+    let imgData = undoneHistory.pop();
+    drawingHistory.push(imgData);
+    let img = new Image();
+    img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    img.src = imgData;
   }
-});
+};
+socket.on("clear", () => ctx.clearRect(0, 0, canvas.width, canvas.height));
 
-function redraw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  for (const p of paths) {
-    ctx.lineWidth = p.brushSize;
-    ctx.strokeStyle = p.color;
-    ctx.beginPath();
-    ctx.moveTo(p.x, p.y);
-    ctx.lineTo(p.x + 0.1, p.y + 0.1);
-    ctx.stroke();
-  }
-}
+// Brush / Eraser
+eraserBtn.onclick = () => { isEraser = true; };
+brushBtn.onclick = () => { isEraser = false; };
 
 // Chat
-const chatInput = document.getElementById("chatInput");
-const chatBox = document.getElementById("chatBox");
-
-chatInput.addEventListener("keypress", e => {
-  if (e.key === "Enter") {
-    const msg = chatInput.value;
-    if (msg.trim() !== "") {
-      socket.emit("chat", { room: roomCode, message: msg });
-      appendMessage(`You: ${msg}`);
-      chatInput.value = "";
-    }
+sendBtn.onclick = () => {
+  const msg = msgInput.value.trim();
+  if (msg && partnerJoined) {
+    socket.emit("message", { msg, username });
+    addMessage(username, msg);
+    msgInput.value = "";
   }
-});
-
-socket.on("chat", msg => {
-  appendMessage(`Partner: ${msg}`);
-});
-
-function appendMessage(msg) {
+};
+socket.on("message", ({ msg, username }) => addMessage(username, msg));
+function addMessage(user, msg) {
   const div = document.createElement("div");
-  div.innerText = msg;
-  chatBox.appendChild(div);
-  chatBox.scrollTop = chatBox.scrollHeight;
+  div.textContent = `${user}: ${msg}`;
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
 }
 
-// Music control
-const music = document.getElementById("musicPlayer");
-const musicToggle = document.getElementById("musicToggle");
-
-musicToggle.addEventListener("click", () => {
+// Music
+musicControl.onclick = () => {
   if (music.paused) {
     music.play();
-    musicToggle.innerText = "🎵 Pause";
+    musicControl.textContent = "Pause Music";
   } else {
     music.pause();
-    musicToggle.innerText = "🎵 Play";
+    musicControl.textContent = "Play Music";
   }
+};
+
+// Room and partner
+socket.emit("join-room", roomCode, username);
+socket.on("room-joined", () => {
+  partnerStatus.textContent = "✅ Partner joined";
+  partnerJoined = true;
 });
-
-// Room join
-socket.emit("join-room", roomCode);
-
-socket.on("user-update", users => {
-  user1.innerText = users[0] || "Waiting...";
-  user2.innerText = users[1] || "Waiting...";
+socket.on("room-not-found", () => {
+  alert("Invalid room code. Returning to home.");
+  window.location.href = "index.html";
 });
-
-socket.on("room-invalid", () => {
-  alert("Invalid or non-existent room. Redirecting...");
-  window.location.href = "/";
+socket.on("waiting", () => {
+  partnerStatus.textContent = "⏳ Waiting for your partner...";
 });
