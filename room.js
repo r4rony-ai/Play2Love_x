@@ -1,32 +1,171 @@
 const socket = io("https://play2love-serverx-1.onrender.com");
 
-const canvas = document.getElementById("drawCanvas"); const ctx = canvas.getContext("2d"); const colorPicker = document.getElementById("colorPicker"); const brushSize = document.getElementById("brushSize"); const chatBox = document.getElementById("chatBox"); const chatInput = document.getElementById("chatInput"); const sendBtn = document.getElementById("sendBtn"); const clearBtn = document.getElementById("clearBtn"); const partnerStatus = document.getElementById("partnerStatus");
+const canvas = document.getElementById("drawCanvas");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth * 0.9;
+canvas.height = window.innerHeight * 0.45;
 
-const music = document.getElementById("bgMusic"); music.play().catch(() => {});
+const roomCode = new URLSearchParams(window.location.search).get("room");
+document.getElementById("roomCodeDisplay").innerText = `Room: ${roomCode}`;
 
-let drawing = false; let isPartnerJoined = false; const brush = { color: colorPicker.value, size: brushSize.value };
+let drawing = false;
+let paths = [];
+let undoStack = [];
 
-canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+const user1 = document.getElementById("user1");
+const user2 = document.getElementById("user2");
 
-const username = localStorage.getItem("username") || "User"; const room = localStorage.getItem("room") || "none";
+let color = document.getElementById("colorPicker").value;
+let brushSize = document.getElementById("brushSize").value;
 
-socket.emit("joinRoom", { room, username });
+document.getElementById("colorPicker").addEventListener("change", e => color = e.target.value);
+document.getElementById("brushSize").addEventListener("input", e => brushSize = e.target.value);
 
-socket.on("partnerJoined", ({ username }) => { isPartnerJoined = true; partnerStatus.textContent = ${username} joined!; });
+canvas.addEventListener("mousedown", startDraw);
+canvas.addEventListener("mousemove", draw);
+canvas.addEventListener("mouseup", () => (drawing = false));
+canvas.addEventListener("mouseout", () => (drawing = false));
 
-// Draw canvas.addEventListener("mousedown", () => { if (isPartnerJoined) drawing = true; }); canvas.addEventListener("mouseup", () => { drawing = false; ctx.beginPath(); }); canvas.addEventListener("mouseout", () => { drawing = false; ctx.beginPath(); }); canvas.addEventListener("mousemove", (e) => { if (!drawing || !isPartnerJoined) return; const x = e.offsetX; const y = e.offsetY; ctx.lineWidth = brush.size; ctx.lineCap = "round"; ctx.strokeStyle = brush.color; ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y); socket.emit("drawing", { x, y, brushColor: brush.color, brushSize: brush.size }); });
+canvas.addEventListener("touchstart", e => {
+  const touch = e.touches[0];
+  const mouseEvent = new MouseEvent("mousedown", {
+    clientX: touch.clientX,
+    clientY: touch.clientY
+  });
+  canvas.dispatchEvent(mouseEvent);
+});
 
-socket.on("drawing", ({ x, y, brushColor, brushSize }) => { ctx.lineWidth = brushSize; ctx.strokeStyle = brushColor; ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y); });
+canvas.addEventListener("touchmove", e => {
+  const touch = e.touches[0];
+  const mouseEvent = new MouseEvent("mousemove", {
+    clientX: touch.clientX,
+    clientY: touch.clientY
+  });
+  canvas.dispatchEvent(mouseEvent);
+});
 
-// Chat sendBtn.addEventListener("click", () => { const msg = chatInput.value.trim(); if (msg && isPartnerJoined) { appendChat(You: ${msg}); socket.emit("chat", { message: msg }); chatInput.value = ""; } });
+canvas.addEventListener("touchend", () => {
+  const mouseEvent = new MouseEvent("mouseup", {});
+  canvas.dispatchEvent(mouseEvent);
+});
 
-socket.on("chat", ({ username, message }) => { appendChat(${username}: ${message}); });
+function startDraw(e) {
+  drawing = true;
+  draw(e);
+}
 
-function appendChat(msg) { const p = document.createElement("p"); p.textContent = msg; chatBox.appendChild(p); chatBox.scrollTop = chatBox.scrollHeight; }
+function draw(e) {
+  if (!drawing) return;
+  const x = e.clientX - canvas.getBoundingClientRect().left;
+  const y = e.clientY - canvas.getBoundingClientRect().top;
 
-// Clear clearBtn.addEventListener("click", () => { ctx.clearRect(0, 0, canvas.width, canvas.height); socket.emit("clear"); });
+  ctx.lineWidth = brushSize;
+  ctx.strokeStyle = color;
+  ctx.lineCap = "round";
 
-socket.on("clear", () => { ctx.clearRect(0, 0, canvas.width, canvas.height); });
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + 0.1, y + 0.1); // tiny offset to prevent dotting
+  ctx.stroke();
 
-// Brush updates colorPicker.addEventListener("input", (e) => brush.color = e.target.value); brushSize.addEventListener("input", (e) => brush.size = e.target.value);
+  const path = { x, y, color, brushSize };
+  paths.push(path);
+  socket.emit("drawing", { room: roomCode, ...path });
+}
 
+socket.on("draw", ({ x, y, color, brushSize }) => {
+  ctx.lineWidth = brushSize;
+  ctx.strokeStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + 0.1, y + 0.1);
+  ctx.stroke();
+});
+
+document.getElementById("clearBtn").addEventListener("click", () => {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  socket.emit("clear", roomCode);
+});
+
+socket.on("clear", () => {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+});
+
+document.getElementById("undoBtn").addEventListener("click", () => {
+  if (paths.length > 0) {
+    undoStack.push(paths.pop());
+    redraw();
+  }
+});
+
+document.getElementById("redoBtn").addEventListener("click", () => {
+  if (undoStack.length > 0) {
+    paths.push(undoStack.pop());
+    redraw();
+  }
+});
+
+function redraw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (const p of paths) {
+    ctx.lineWidth = p.brushSize;
+    ctx.strokeStyle = p.color;
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+    ctx.lineTo(p.x + 0.1, p.y + 0.1);
+    ctx.stroke();
+  }
+}
+
+// Chat
+const chatInput = document.getElementById("chatInput");
+const chatBox = document.getElementById("chatBox");
+
+chatInput.addEventListener("keypress", e => {
+  if (e.key === "Enter") {
+    const msg = chatInput.value;
+    if (msg.trim() !== "") {
+      socket.emit("chat", { room: roomCode, message: msg });
+      appendMessage(`You: ${msg}`);
+      chatInput.value = "";
+    }
+  }
+});
+
+socket.on("chat", msg => {
+  appendMessage(`Partner: ${msg}`);
+});
+
+function appendMessage(msg) {
+  const div = document.createElement("div");
+  div.innerText = msg;
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+// Music control
+const music = document.getElementById("musicPlayer");
+const musicToggle = document.getElementById("musicToggle");
+
+musicToggle.addEventListener("click", () => {
+  if (music.paused) {
+    music.play();
+    musicToggle.innerText = "🎵 Pause";
+  } else {
+    music.pause();
+    musicToggle.innerText = "🎵 Play";
+  }
+});
+
+// Room join
+socket.emit("join-room", roomCode);
+
+socket.on("user-update", users => {
+  user1.innerText = users[0] || "Waiting...";
+  user2.innerText = users[1] || "Waiting...";
+});
+
+socket.on("room-invalid", () => {
+  alert("Invalid or non-existent room. Redirecting...");
+  window.location.href = "/";
+});
